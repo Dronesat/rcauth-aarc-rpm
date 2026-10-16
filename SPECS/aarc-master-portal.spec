@@ -17,6 +17,7 @@ Source3:        https://github.com/rcauth-eu/aarc-ssh-portal/releases/download/v
 Source4:        https://github.com/rcauth-eu/aarc-vo-portal/releases/download/v%{version}/vo-portal.war
 
 BuildArch:      noarch
+Conflicts:      aarc-delegation-server
 
 # Tomcat must exist and own the target directory before this package installs.
 Requires: (tomcat >= 1:9 with tomcat < 1:10)

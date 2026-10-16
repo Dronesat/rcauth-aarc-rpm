@@ -14,6 +14,7 @@ Source0:        https://github.com/rcauth-eu/aarc-delegation-server/releases/dow
 Source1:        https://github.com/rcauth-eu/aarc-delegation-server/releases/download/v%{version}/oauth2.war
 
 BuildArch:      noarch
+Conflicts:      aarc-master-portal
 
 # Tomcat must exist and own the target directory before this package installs.
 Requires: (tomcat >= 1:9 with tomcat < 1:10)
