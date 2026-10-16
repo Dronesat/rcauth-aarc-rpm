@@ -1,0 +1,11 @@
+*.rpm
+*.tar.gz
+*.tar.xz
+*.tgz
+/BUILD/
+/BUILDROOT/
+/RPMS/
+/SRPMS/
+/results/
+SOURCES/*.war
+SOURCES/*.jar
