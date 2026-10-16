@@ -11,7 +11,7 @@ This repository mirrors the standard `rpmbuild` directory layout, but only the b
 ## Prerequisites
 Tested on EL9 environment (Rocky/Alma/RHEL9).
 ```
-sudo dnf install -y rpmbuild rpmdevtools dnf
+sudo dnf install -y rpmbuild rpmdevtools git
 ```
 Build as a normal user, not root.
 
