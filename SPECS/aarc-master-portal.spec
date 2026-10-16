@@ -78,5 +78,5 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
-* Wed Oct 10 2026 Hieu <hieu.le@stfc.ac.uk> - 0.2.7-1
+* Fri Oct 16 2026 Hieu <hieu.le@stfc.ac.uk> - 0.2.7-1
 - Initial packaging of aarc-master-portal
