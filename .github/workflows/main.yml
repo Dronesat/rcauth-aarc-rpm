@@ -1,0 +1,22 @@
+name: Build RPMs
+
+on:
+  push:
+  workflow_dispatch:      # adds a "Run workflow" button for manual runs
+
+jobs:
+  rpm-master-portal:
+    runs-on: ubuntu-latest
+    container: rockylinux:9
+    steps:
+      - uses: actions/checkout@v4
+      - run: dnf -y install rpm-build rpmdevtools
+      - run: rpmdev-setuptree
+      - name: Download Source URLs from the spec
+        run: spectool -g -R rpm/aarc-master-portal.spec
+      - name: Build RPM
+        run: rpmbuild -bb rpm/aarc-master-portal.spec
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aarc-master-portal-rpms
+          path: ~/rpmbuild/RPMS/
