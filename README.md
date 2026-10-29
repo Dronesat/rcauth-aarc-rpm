@@ -1,4 +1,5 @@
 # RCauth/AARC RPM Packaging
+[![Build RPMs](https://github.com/Dronesat/rcauth-aarc-rpm/actions/workflows/main.yml/badge.svg)](https://github.com/Dronesat/rcauth-aarc-rpm/actions/workflows/main.yml)
 RPM spec files for the RCauth components:
 
 Package | Version | Spec file
