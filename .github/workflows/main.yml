@@ -6,10 +6,12 @@ on:
     tags: ['v*']                 # tag pushes always trigger, regardless of paths
     paths:
       - 'SPECS/**'
+      - 'checksums/**'
       - '.github/workflows/**'
   pull_request:
     paths:
       - 'SPECS/**'
+      - 'checksums/**'
       - '.github/workflows/**'
   workflow_dispatch:
 
@@ -39,6 +41,11 @@ jobs:
       - name: Download sources
         run: spectool -g -R SPECS/${{ matrix.package }}.spec
 
+      - name: Verify source checksums
+        run: |
+          cd ~/rpmbuild/SOURCES
+          sha256sum --strict -c "$GITHUB_WORKSPACE/checksums/${{ matrix.package }}.sha256"
+  
       - name: Build RPM
         run: rpmbuild -bb SPECS/${{ matrix.package }}.spec
 
