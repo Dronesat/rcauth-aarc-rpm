@@ -42,7 +42,7 @@ jobs:
       - name: Show package info and contents
         run: rpm -qpil ~/rpmbuild/RPMS/noarch/${{ matrix.package }}-*.rpm
 
-      - uses: action/upload-artifact@v7
+      - uses: action/upload-artifact@v4
         with:
           name: ${{ matrix.package }}-rpm
           path: ~/rpmbuild/RPMS/noarch/${{ matrix.package }}-*.rpm
