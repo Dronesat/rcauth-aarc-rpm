@@ -2,25 +2,69 @@ name: Build RPMs
 
 on:
   push:
-  workflow_dispatch:      # adds a "Run workflow" button for manual runs
+    branches: [main]
+    tags: ['v*']
+    paths:
+      - 'SPECS/**'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+    - 'SPECS/**'
+    - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  rpm-master-portal:
+  build:
     runs-on: ubuntu-latest
     container: rockylinux:9
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [aarc-master-portal, aarc-delegation-server]
     steps:
       - uses: actions/checkout@v4
-      - run: dnf -y install rpm-build rpmdevtools
+
+      - name: Install build tools
+        run: dnf -y install rpm-build rpmdevtools rpmlint
+
       - run: rpmdev-setuptree
-      - name: Download Source URLs from aarc-master-portal.spec
-        run: spectool -g -R SPECS/aarc-master-portal.spec
-      - name: Download Source URLs from aarc-delegation-server.spec
-        run: spectool -g -R SPECS/aarc-delegation-server.spec
-      - name: Build Master Portal RPM
-        run: rpmbuild -bb SPECS/aarc-master-portal.spec
-      - name: Build Delegation Server RPM
-        run: rpmbuild -bb SPECS/aarc-delegation-server.spec
-      - uses: actions/upload-artifact@v7
+
+      - name: Lint spec
+        run: rpmlint SPECS/${{ matrix.package }}.spec
+        continue-on-error: true
+
+      - name: Download sources
+        run: spectool -g -R SPECS/${{ matrix.package }}.spec
+
+      - name: Show package info and contents
+        run: rpm -qpil ~/rpmbuild/RPMS/noarch/${{ matrix.package }}-*.rpm
+
+      - uses: action/upload-artifact@v7
         with:
-          name: aarc-rpms
-          path: ~/rpmbuild/RPMS/noarch
+          name: ${{ matrix.package }}-rpm
+          path: ~/rpmbuild/RPMS/noarch/${{ matrix.package }}-*.rpm
+          if-no-files-found: error
+          
+  release:
+      needs: build
+      if: startsWith(github.ref, 'refs/tags/v')
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+      steps:
+        - uses: actions/download-artifact@v4   # use the latest major alongside upload-artifact@v7
+          with:
+            path: rpms
+            merge-multiple: true
+  
+        - name: Create GitHub Release
+          env:
+            GH_TOKEN: ${{ github.token }}
+          run: |
+            gh release create "$GITHUB_REF_NAME" rpms/*.rpm \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$GITHUB_REF_NAME" \
+              --generate-notes
