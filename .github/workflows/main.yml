@@ -3,14 +3,14 @@ name: Build RPMs
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ['v*']                 # tag pushes always trigger, regardless of paths
     paths:
       - 'SPECS/**'
       - '.github/workflows/**'
   pull_request:
     paths:
-    - 'SPECS/**'
-    - '.github/workflows/**'
+      - 'SPECS/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
@@ -34,37 +34,40 @@ jobs:
 
       - name: Lint spec
         run: rpmlint SPECS/${{ matrix.package }}.spec
-        continue-on-error: true
+        continue-on-error: true   # remove once the spec lints cleanly
 
       - name: Download sources
         run: spectool -g -R SPECS/${{ matrix.package }}.spec
 
+      - name: Build RPM
+        run: rpmbuild -bb SPECS/${{ matrix.package }}.spec
+
       - name: Show package info and contents
         run: rpm -qpil ~/rpmbuild/RPMS/noarch/${{ matrix.package }}-*.rpm
 
-      - uses: action/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.package }}-rpm
           path: ~/rpmbuild/RPMS/noarch/${{ matrix.package }}-*.rpm
           if-no-files-found: error
-          
+
   release:
-      needs: build
-      if: startsWith(github.ref, 'refs/tags/v')
-      runs-on: ubuntu-latest
-      permissions:
-        contents: write
-      steps:
-        - uses: actions/download-artifact@v4   # use the latest major alongside upload-artifact@v7
-          with:
-            path: rpms
-            merge-multiple: true
-  
-        - name: Create GitHub Release
-          env:
-            GH_TOKEN: ${{ github.token }}
-          run: |
-            gh release create "$GITHUB_REF_NAME" rpms/*.rpm \
-              --repo "$GITHUB_REPOSITORY" \
-              --title "$GITHUB_REF_NAME" \
-              --generate-notes
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4   # use the latest major alongside upload-artifact@v7
+        with:
+          path: rpms
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" rpms/*.rpm \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
