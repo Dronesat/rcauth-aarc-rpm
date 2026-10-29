@@ -13,9 +13,9 @@ jobs:
       - run: dnf -y install rpm-build rpmdevtools
       - run: rpmdev-setuptree
       - name: Download Source URLs from the spec
-        run: spectool -g -R rpm/aarc-master-portal.spec
+        run: spectool -g -R SPECS/aarc-master-portal.spec
       - name: Build RPM
-        run: rpmbuild -bb rpm/aarc-master-portal.spec
+        run: rpmbuild -bb SPECS/aarc-master-portal.spec
       - uses: actions/upload-artifact@v4
         with:
           name: aarc-master-portal-rpms
