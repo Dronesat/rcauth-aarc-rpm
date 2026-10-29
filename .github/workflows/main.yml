@@ -18,8 +18,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     container: rockylinux:9
     strategy:
@@ -30,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install build tools
-        run: dnf -y install rpm-build rpmdevtools rpmlint
+        run: dnf -y install rpm-build rpmdevtools rpmlint epel-release
 
       - run: rpmdev-setuptree
 
@@ -49,6 +54,9 @@ jobs:
       - name: Build RPM
         run: rpmbuild -bb SPECS/${{ matrix.package }}.spec
 
+      - name: Test install
+        run: dnf -y install ~/rpmbuild/RPMS/noarch/${{ matrix.package }}-*.rpm
+      
       - name: Show package info and contents
         run: rpm -qpil ~/rpmbuild/RPMS/noarch/${{ matrix.package }}-*.rpm
 
@@ -69,7 +77,9 @@ jobs:
         with:
           path: rpms
           merge-multiple: true
-
+          
+      - run: cd rpms && sha256sum *.rpm > SHA256SUMS
+      
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
